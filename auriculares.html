@@ -94,7 +94,7 @@
 <body>
 
   <h1>Gestión de Inventario de Auriculares</h1>
-  
+
   <!-- Botones de navegación -->
   <div style="text-align:center; margin-bottom: 20px;">
     <a href="https://nicolaspioli.github.io/inventario-cauciones/index.html"><button>Inicio</button></a>
@@ -111,6 +111,7 @@
   </div>
 
   <form id="form-auriculares">
+    <input type="hidden" id="id" />
     <select id="type">
       <option value="HeadSet">HeadSet</option>
     </select>
@@ -144,7 +145,7 @@
   <table id="tabla-inventario">
     <thead>
       <tr>
-        <th>Type</th><th>Name</th><th>Status</th><th>Owner</th><th>Location</th><th>Manufacturer</th><th>Model</th><th>Fecha de Adquisicion</th><th>Acciones</th>
+        <th>ID</th><th>Type</th><th>Name</th><th>Status</th><th>Owner</th><th>Location</th><th>Manufacturer</th><th>Model</th><th>Fecha de Adquisicion</th><th>Acciones</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -176,8 +177,15 @@
     fila.dataset.id = data.id;
 
     fila.innerHTML = `
-      <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td><td>${data.location}</td>
-      <td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
+      <td>${data.id}</td>
+      <td>${data.type}</td>
+      <td>${data.name}</td>
+      <td>${data.status}</td>
+      <td>${data.owner}</td>
+      <td>${data.location}</td>
+      <td>${data.manufacturer}</td>
+      <td>${data.model}</td>
+      <td>${data.acquisitiondate}</td>
       <td>
         <button class="btn-editar">Editar</button>
         <button class="btn-borrar">Borrar</button>
@@ -188,29 +196,27 @@
       if (confirm('¿Deseas borrar este registro?')) {
         const id = fila.dataset.id;
         try {
-          const res = await fetch(`${API_URL}/until/id/${id}`, {
-            method: 'DELETE'
-          });
+          const res = await fetch(`${API_URL}/until/id/${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
           fila.remove();
           actualizarResumenEstados();
           alert('Registro borrado correctamente');
         } catch (err) {
           alert('Error al borrar: ' + err.message);
-          console.error(err);
         }
       }
     });
 
     fila.querySelector('.btn-editar').addEventListener('click', () => {
-      document.getElementById('type').value = fila.cells[0].innerText;
-      document.getElementById('name').value = fila.cells[1].innerText;
-      document.getElementById('status').value = fila.cells[2].innerText;
-      document.getElementById('owner').value = fila.cells[3].innerText;
-      document.getElementById('location').value = fila.cells[4].innerText;
-      document.getElementById('manufacturer').value = fila.cells[5].innerText;
-      document.getElementById('model').value = fila.cells[6].innerText;
-      document.getElementById('acquisitiondate').value = fila.cells[7].innerText;
+      document.getElementById('id').value = fila.cells[0].innerText;
+      document.getElementById('type').value = fila.cells[1].innerText;
+      document.getElementById('name').value = fila.cells[2].innerText;
+      document.getElementById('status').value = fila.cells[3].innerText;
+      document.getElementById('owner').value = fila.cells[4].innerText;
+      document.getElementById('location').value = fila.cells[5].innerText;
+      document.getElementById('manufacturer').value = fila.cells[6].innerText;
+      document.getElementById('model').value = fila.cells[7].innerText;
+      document.getElementById('acquisitiondate').value = fila.cells[8].innerText;
 
       editId = fila.dataset.id;
       submitButton.textContent = "Actualizar Auricular";
@@ -220,7 +226,7 @@
   function actualizarResumenEstados() {
     const resumen = {};
     for (let row of tabla.rows) {
-      const estado = row.cells[2].innerText;
+      const estado = row.cells[3].innerText;
       resumen[estado] = (resumen[estado] || 0) + 1;
     }
     let html = '<h3>Resumen por Estado</h3><ul>';
@@ -260,7 +266,7 @@
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const id = editId || Date.now().toString();
+    const id = editId || document.getElementById('id').value || Date.now().toString();
     const data = {
       id,
       type: document.getElementById('type').value,
@@ -279,14 +285,15 @@
     } else {
       for (let row of tabla.rows) {
         if (row.dataset.id === editId) {
-          row.cells[0].innerText = data.type;
-          row.cells[1].innerText = data.name;
-          row.cells[2].innerText = data.status;
-          row.cells[3].innerText = data.owner;
-          row.cells[4].innerText = data.location;
-          row.cells[5].innerText = data.manufacturer;
-          row.cells[6].innerText = data.model;
-          row.cells[7].innerText = data.acquisitiondate;
+          row.cells[0].innerText = data.id;
+          row.cells[1].innerText = data.type;
+          row.cells[2].innerText = data.name;
+          row.cells[3].innerText = data.status;
+          row.cells[4].innerText = data.owner;
+          row.cells[5].innerText = data.location;
+          row.cells[6].innerText = data.manufacturer;
+          row.cells[7].innerText = data.model;
+          row.cells[8].innerText = data.acquisitiondate;
         }
       }
       await actualizarEnSheetBest(editId, data);
@@ -296,13 +303,8 @@
 
     actualizarResumenEstados();
     form.reset();
+    document.getElementById('id').value = '';
   });
-
-  cargarDesdeSheetBest();
-</script>
-
-</body>
-</html>
 
   cargarDesdeSheetBest();
 </script>
