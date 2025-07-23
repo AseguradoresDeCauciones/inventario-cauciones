@@ -248,39 +248,41 @@
   }
 
   form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const data = {
-      type: document.getElementById('type').value,
-      name: document.getElementById('name').value,
-      status: document.getElementById('status').value,
-      owner: document.getElementById('owner').value,
-      location: document.getElementById('location').value,
-      manufacturer: document.getElementById('manufacturer').value,
-      model: document.getElementById('model').value,
-      acquisitiondate: document.getElementById('acquisitiondate').value
-    };
+  e.preventDefault();
+  const data = {
+    type: document.getElementById('type').value,
+    name: document.getElementById('name').value,
+    status: document.getElementById('status').value,
+    owner: document.getElementById('owner').value,
+    location: document.getElementById('location').value,
+    manufacturer: document.getElementById('manufacturer').value,
+    model: document.getElementById('model').value,
+    acquisitiondate: document.getElementById('acquisitiondate').value
+  };
 
-    if (editIndex === null) {
-      agregarFila(data);
-      await guardarEnSheetBest(data);
-    } else {
-      const fila = tabla.rows[editIndex];
-      fila.cells[0].innerText = data.type;
-      fila.cells[1].innerText = data.name;
-      fila.cells[2].innerText = data.status;
-      fila.cells[3].innerText = data.owner;
-      fila.cells[4].innerText = data.location;
-      fila.cells[5].innerText = data.manufacturer;
-      fila.cells[6].innerText = data.model;
-      fila.cells[7].innerText = data.acquisitiondate;
-      // No actualiza en SheetBest porque no hay id para actualizar
-      editIndex = null;
-      submitButton.textContent = "Agregar Auricular";
-    }
+  if (editIndex === null) {
+    // Ya no agregamos fila localmente para evitar duplicados
+    await guardarEnSheetBest(data);
+    await cargarDesdeSheetBest(); // recargar tabla y resumen con datos frescos
+  } else {
+    // Editar localmente (sin API)
+    const fila = tabla.rows[editIndex];
+    fila.cells[0].innerText = data.type;
+    fila.cells[1].innerText = data.name;
+    fila.cells[2].innerText = data.status;
+    fila.cells[3].innerText = data.owner;
+    fila.cells[4].innerText = data.location;
+    fila.cells[5].innerText = data.manufacturer;
+    fila.cells[6].innerText = data.model;
+    fila.cells[7].innerText = data.acquisitiondate;
 
-    actualizarResumenEstados();
-    form.reset();
-  });
+    editIndex = null;
+    submitButton.textContent = "Agregar Auricular";
+  }
+
+  actualizarResumenEstados();
+  form.reset();
+});
 
   // Cargar datos al iniciar la página
   cargarDesdeSheetBest();
