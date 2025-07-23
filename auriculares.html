@@ -111,6 +111,7 @@
   </div>
 
   <form id="form-auriculares">
+    <input type="hidden" id="id" name="id">
     <select id="type">
       <option value="HeadSet">HeadSet</option>
     </select>
@@ -296,6 +297,8 @@
 
     actualizarResumenEstados();
     form.reset();
+editId = null;
+submitButton.textContent = "Agregar Auricular";
   });
 
   cargarDesdeSheetBest();
