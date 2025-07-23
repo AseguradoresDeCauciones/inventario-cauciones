@@ -110,7 +110,7 @@
     <a href="https://nicolaspioli.github.io/inventario-cauciones/perifericosrotos.html"><button>Periféricos Rotos</button></a>
   </div>
 
-  <form id="form-auriculares">
+ <form id="form-auriculares">
     <input type="hidden" id="id" name="id">
     <select id="type">
       <option value="HeadSet">HeadSet</option>
@@ -140,6 +140,7 @@
     </select>
     <input type="date" id="acquisitiondate">
     <button type="submit" id="btn-submit">Agregar Auricular</button>
+    <button type="button" id="saveChangesButton" style="display:none;">Guardar Cambios</button>
   </form>
 
   <table id="tabla-inventario">
@@ -161,6 +162,7 @@
   const ownerSelect = document.getElementById('owner');
   const resumenDiv = document.getElementById('resumen-estados');
   const submitButton = document.getElementById('btn-submit');
+  const saveChangesButton = document.getElementById('saveChangesButton');
 
   const owners = ["Agencia Salta", "Agencia Tucuman", "Agustin de Vedia", "Alicia Salica", "Ana Paula Varas", "Antonio De Vedia", "Armando Fontana", "Brenda Tedesco", "Claudia Valdez", "Comunidad cordoba", "Cristian Schwerdtfeger", "Dalma Guione", "Daniela Rubil", "Daniel Castellucci", "Departamento de Vigilancia", "Directorio", "Emanuel Genovese", "Emilce Garcete Mendez", "Emilia Haurie", "Estefania Aguirre", "Federico Ertola", "Fernando Napoli", "Fernando Panno", "Florencia Martinez", "Florencia Olote", "Gabriel Mazzotta", "Gaston Alvarez", "Gimena Guerrero", "Giselle Kraus", "Hector Rossini", "Hernan Prebisch", "Hisvery Barrios", "Javier Gonzalez", "Joel Avalos", "Jose De Vedia", "Juan Carlos Magariños", "Julian Tamoni", "Julieta Brarda", "Karen Tartaruca", "Karina Barrionuevo", "Laura Montanile", "Leandra Valdez", "Leandro Da Costa", "Luis Badalucco", "Luis Cabana", "Mantenimiento Cauciones", "Marcela Morales", "Marcelo Santillan", "Maria del Valle Ahumada", "Mariano Castellucci", "Mariel Gomez", "Mariela Luciani", "Mauricio Monteros", "Mauricio Scarlata", "Melanie Cirigliano", "Mercedes Taberna", "Micaela De Vedia", "Miguel Castillo", "Monica Lanciotti", "Nancy Aristu", "Nicolas Guaman", "Nicolas Pioli", "Pablo Alcacer", "Pablo Moine", "Pedro Garcia", "Pilar Noguer", "Ricardo Falci", "Ricardo Giacoboni", "Rocio Cabrera", "Rodrigo Vascón", "Rosana Berruezo", "Santiago Botella", "Santiago De Vedia", "Santiago Livieri", "Santiago Toribio", "Sebastian Amadori", "Sigrid Taina", "Silvia Cornejo", "Sofia Maria Garcia Peña", "Valeria Bulacio", "Vanina Alegre", "Victoria Montico", "Yanina Derbunovich", "Yesica Geraldi", "Sala Aconcagua", "Sala Condor", "Terraza Cauciones"];
   owners.forEach(owner => {
@@ -214,7 +216,9 @@
       document.getElementById('acquisitiondate').value = fila.cells[7].innerText;
 
       editId = fila.dataset.id;
-      submitButton.textContent = "Actualizar Auricular";
+      submitButton.style.display = "none";
+      saveChangesButton.style.display = "inline";
+      submitButton.textContent = "Agregar Auricular";
     });
   }
 
@@ -259,11 +263,10 @@
     actualizarResumenEstados();
   }
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const id = editId || Date.now().toString();
-    const data = {
-      id,
+  // Función para obtener los datos del formulario en un objeto
+  function getFormData() {
+    return {
+      id: editId || Date.now().toString(),
       type: document.getElementById('type').value,
       name: document.getElementById('name').value,
       status: document.getElementById('status').value,
@@ -273,32 +276,58 @@
       model: document.getElementById('model').value,
       acquisitiondate: document.getElementById('acquisitiondate').value
     };
+  }
 
-    if (!editId) {
-      agregarFila(data);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    // Solo permitir agregar cuando NO estamos editando
+    if (editId) {
+      return;
+    }
+    const data = getFormData();
+    agregarFila(data);
+    try {
       await guardarEnSheetBest(data);
-    } else {
-      for (let row of tabla.rows) {
-        if (row.dataset.id === editId) {
-          row.cells[0].innerText = data.type;
-          row.cells[1].innerText = data.name;
-          row.cells[2].innerText = data.status;
-          row.cells[3].innerText = data.owner;
-          row.cells[4].innerText = data.location;
-          row.cells[5].innerText = data.manufacturer;
-          row.cells[6].innerText = data.model;
-          row.cells[7].innerText = data.acquisitiondate;
-        }
+      alert("Auricular agregado correctamente");
+    } catch (err) {
+      alert("Error al guardar: " + err.message);
+      console.error(err);
+    }
+    form.reset();
+    actualizarResumenEstados();
+  });
+
+  saveChangesButton.addEventListener('click', async () => {
+    const data = getFormData();
+
+    // Actualizar tabla HTML
+    for (let row of tabla.rows) {
+      if (row.dataset.id === editId) {
+        row.cells[0].innerText = data.type;
+        row.cells[1].innerText = data.name;
+        row.cells[2].innerText = data.status;
+        row.cells[3].innerText = data.owner;
+        row.cells[4].innerText = data.location;
+        row.cells[5].innerText = data.manufacturer;
+        row.cells[6].innerText = data.model;
+        row.cells[7].innerText = data.acquisitiondate;
+        break;
       }
-      await actualizarEnSheetBest(editId, data);
-      editId = null;
-      submitButton.textContent = "Agregar Auricular";
     }
 
-    actualizarResumenEstados();
+    try {
+      await actualizarEnSheetBest(editId, data);
+      alert("Cambios guardados correctamente");
+    } catch (err) {
+      alert("Error al actualizar: " + err.message);
+      console.error(err);
+    }
+
+    editId = null;
     form.reset();
-editId = null;
-submitButton.textContent = "Agregar Auricular";
+    submitButton.style.display = "inline";
+    saveChangesButton.style.display = "none";
+    actualizarResumenEstados();
   });
 
   cargarDesdeSheetBest();
