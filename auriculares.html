@@ -238,16 +238,17 @@ div a button:hover {
   }
 }
 
-  async function cargarDesdeSheetDB() {
-    try {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      data.forEach(item => agregarFila(item));
-      actualizarResumenEstados();
-    } catch (error) {
-      console.error("Error al cargar datos de SheetDB", error);
-    }
+ async function cargarDesdeSheetBest() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    tabla.innerHTML = ''; // limpiar la tabla antes
+    data.forEach(item => agregarFila(item));
+    actualizarResumenEstados();
+  } catch (error) {
+    console.error("Error al cargar desde SheetBest:", error);
   }
+}
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -285,7 +286,7 @@ div a button:hover {
   });
 
   // Al cargar la página
-  cargarDesdeSheetDB();
+  cargarDesdeSheetBest();
 </script>
 </body>
 </html>
