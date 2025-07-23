@@ -175,23 +175,23 @@
     const fila = tabla.insertRow();
     fila.dataset.id = data.id;
 
-    fila.innerHTML = 
+    fila.innerHTML = `
       <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td><td>${data.location}</td>
       <td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
       <td>
         <button class="btn-editar">Editar</button>
         <button class="btn-borrar">Borrar</button>
       </td>
-    ;
+    `;
 
     fila.querySelector('.btn-borrar').addEventListener('click', async () => {
       if (confirm('¿Deseas borrar este registro?')) {
         const id = fila.dataset.id;
         try {
-          const res = await fetch(${API_URL}/until/id/${id}, {
+          const res = await fetch(`${API_URL}/until/id/${id}`, {
             method: 'DELETE'
           });
-          if (!res.ok) throw new Error(Error al borrar: ${res.status});
+          if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
           fila.remove();
           actualizarResumenEstados();
           alert('Registro borrado correctamente');
@@ -225,7 +225,7 @@
     }
     let html = '<h3>Resumen por Estado</h3><ul>';
     for (let estado in resumen) {
-      html += <li><strong>${estado}:</strong> ${resumen[estado]}</li>;
+      html += `<li><strong>${estado}:</strong> ${resumen[estado]}</li>`;
     }
     html += '</ul>';
     resumenDiv.innerHTML = html;
@@ -241,7 +241,7 @@
   }
 
   async function actualizarEnSheetBest(id, data) {
-    const res = await fetch(${API_URL}/until/id/${id}, {
+    const res = await fetch(`${API_URL}/until/id/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -294,7 +294,7 @@
       submitButton.textContent = "Agregar Auricular";
     }
 
-    actualizarResumenEstados(); 
+    actualizarResumenEstados();
     form.reset();
   });
 
@@ -304,3 +304,8 @@
 </body>
 </html>
 
+  cargarDesdeSheetBest();
+</script>
+
+</body>
+</html>
