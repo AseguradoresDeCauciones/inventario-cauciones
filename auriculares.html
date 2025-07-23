@@ -267,47 +267,33 @@
   }
 
   async function cargarDesdeSheetBest() {
-    try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error('Error cargando datos');
-      const data = await res.json();
-      tabla.innerHTML = ''; // limpiar tabla
-      data.forEach(item => agregarFila(item));
-      actualizarResumenEstados();
-    } catch (error) {
-      console.error("Error al cargar desde SheetBest:", error);
-      alert("Error al cargar datos: " + error.message);
-    }
-  }
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error('Error cargando datos');
+    const data = await res.json();
+    tabla.innerHTML = ''; // limpiar tabla
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const data = {
-      type: document.getElementById('type').value,
-      name: document.getElementById('name').value,
-      status: document.getElementById('status').value,
-      owner: document.getElementById('owner').value,
-      location: document.getElementById('location').value,
-      manufacturer: document.getElementById('manufacturer').value,
-      model: document.getElementById('model').value,
-      acquisitiondate: document.getElementById('acquisitiondate').value
-    };
+    const ownersUnicos = new Set();
+    data.forEach(item => {
+      agregarFila(item);
+      if (item.owner) ownersUnicos.add(item.owner);
+    });
 
-    if (editId === null) {
-      // Nuevo registro
-      await guardarEnSheetBest(data);
-      await cargarDesdeSheetBest();
-    } else {
-      // Actualizar registro existente
-      await actualizarEnSheetBest(editId, data);
-      await cargarDesdeSheetBest();
-      editId = null;
-      submitButton.textContent = "Agregar Auricular";
-    }
+    // actualizar lista de owners si está vacía
+    ownerSelect.innerHTML = '';
+    ownersUnicos.forEach(owner => {
+      const option = document.createElement('option');
+      option.value = owner;
+      option.textContent = owner;
+      ownerSelect.appendChild(option);
+    });
 
-    form.reset();
     actualizarResumenEstados();
-  });
+  } catch (error) {
+    console.error("Error al cargar desde SheetBest:", error);
+    alert("Error al cargar datos: " + error.message);
+  }
+}
 
   // Cargar datos al iniciar la página
   cargarDesdeSheetBest();
