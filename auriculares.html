@@ -219,6 +219,7 @@
           alert('Registro borrado correctamente');
         } catch (err) {
           alert('Error al borrar: ' + err.message);
+          console.error(err);
         }
       }
     });
