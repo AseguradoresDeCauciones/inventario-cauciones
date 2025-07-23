@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -140,7 +139,8 @@
     <input type="date" id="acquisitiondate" required>
     <button type="submit" id="btn-submit">Agregar Auricular</button>
   </form>
-<table id="tabla-inventario">
+
+  <table id="tabla-inventario">
     <thead>
       <tr>
         <th>Type</th><th>Name</th><th>Status</th><th>Owner</th><th>Location</th><th>Manufacturer</th><th>Model</th><th>Fecha de Adquisicion</th><th>Acciones</th>
@@ -160,9 +160,7 @@
   const resumenDiv = document.getElementById('resumen-estados');
   const submitButton = document.getElementById('btn-submit');
 
-  const generarID = () => Date.now().toString();
-
-  const owners = ["Agencia Salta", "Agencia Tucuman", "Agustin de Vedia", "Alicia Salica", "Ana Paula Varas", "Antonio De Vedia"];
+  const owners = ["Agencia Salta", "Agencia Tucuman", "Agustin de Vedia", "Alicia Salica", "Ana Paula Varas", "Antonio De Vedia", "Armando Fontana", "Brenda Tedesco", "Claudia Valdez", "Comunidad cordoba", "Cristian Schwerdtfeger", "Dalma Guione", "Daniela Rubil", "Daniel Castellucci", "Departamento de Vigilancia", "Directorio", "Emanuel Genovese", "Emilce Garcete Mendez", "Emilia Haurie", "Estefania Aguirre", "Federico Ertola", "Fernando Napoli", "Fernando Panno", "Florencia Martinez", "Florencia Olote", "Gabriel Mazzotta", "Gaston Alvarez", "Gimena Guerrero", "Giselle Kraus", "Hector Rossini", "Hernan Prebisch", "Hisvery Barrios", "Javier Gonzalez", "Joel Avalos", "Jose De Vedia", "Juan Carlos Magariños", "Julian Tamoni", "Julieta Brarda", "Karen Tartaruca", "Karina Barrionuevo", "Laura Montanile", "Leandra Valdez", "Leandro Da Costa", "Luis Badalucco", "Luis Cabana", "Mantenimiento Cauciones", "Marcela Morales", "Marcelo Santillan", "Maria del Valle Ahumada", "Mariano Castellucci", "Mariel Gomez", "Mariela Luciani", "Mauricio Monteros", "Mauricio Scarlata", "Melanie Cirigliano", "Mercedes Taberna", "Micaela De Vedia", "Miguel Castillo", "Monica Lanciotti", "Nancy Aristu", "Nicolas Guaman", "Nicolas Pioli", "Pablo Alcacer", "Pablo Moine", "Pedro Garcia", "Pilar Noguer", "Ricardo Falci", "Ricardo Giacoboni", "Rocio Cabrera", "Rodrigo Vascón", "Rosana Berruezo", "Santiago Botella", "Santiago De Vedia", "Santiago Livieri", "Santiago Toribio", "Sebastian Amadori", "Sigrid Taina", "Silvia Cornejo", "Sofia Maria Garcia Peña", "Valeria Bulacio", "Vanina Alegre", "Victoria Montico", "Yanina Derbunovich", "Yesica Geraldi", "Sala Aconcagua", "Sala Condor", "Terraza Cauciones"];
   owners.forEach(owner => {
     const option = document.createElement('option');
     option.value = owner;
@@ -170,43 +168,52 @@
     ownerSelect.appendChild(option);
   });
 
-  let editandoID = null;
+  let editIndex = null;
 
   function agregarFila(data) {
-    const fila = tabla.insertRow();
-    fila.dataset.id = data.id;
-    fila.innerHTML = `
-      <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td>
-      <td>${data.location}</td><td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
-      <td>
-        <button class="btn-editar">Editar</button>
-        <button class="btn-borrar">Borrar</button>
-      </td>
-    `;
+  const fila = tabla.insertRow();
+  fila.dataset.id = data.id; // guardamos id para borrar después
+  fila.innerHTML = 
+    <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td><td>${data.location}</td>
+    <td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
+    <td>
+      <button class="btn-editar">Editar</button>
+      <button class="btn-borrar">Borrar</button>
+    </td>
+  ;
 
-    fila.querySelector('.btn-borrar').addEventListener('click', async () => {
+  fila.querySelector('.btn-borrar').addEventListener('click', async () => {
+    if (confirm('¿Deseas borrar este registro?')) {
       const id = fila.dataset.id;
-      if (confirm('¿Deseas borrar este registro?')) {
+      if (id) {
         try {
-          await fetch(`${API_URL}?id=${id}`, { method: 'DELETE' });
+          const res = await fetch(${API_URL}?id=${id}, {
+            method: 'DELETE'
+          });
+          if (!res.ok) throw new Error(Error al borrar: ${res.status});
           fila.remove();
           actualizarResumenEstados();
-        } catch (e) {
-          alert('Error al borrar');
+          alert('Registro borrado correctamente');
+        } catch (err) {
+          alert('Error al borrar: ' + err.message);
+          console.error(err);
         }
+      } else {
+        alert('No se encontró ID para borrar');
       }
-    });
-
+    }
+  });
     fila.querySelector('.btn-editar').addEventListener('click', () => {
-      form.type.value = data.type;
-      form.name.value = data.name;
-      form.status.value = data.status;
-      form.owner.value = data.owner;
-      form.location.value = data.location;
-      form.manufacturer.value = data.manufacturer;
-      form.model.value = data.model;
-      form.acquisitiondate.value = data.acquisitiondate;
-      editandoID = data.id;
+      document.getElementById('type').value = fila.cells[0].innerText;
+      document.getElementById('name').value = fila.cells[1].innerText;
+      document.getElementById('status').value = fila.cells[2].innerText;
+      document.getElementById('owner').value = fila.cells[3].innerText;
+      document.getElementById('location').value = fila.cells[4].innerText;
+      document.getElementById('manufacturer').value = fila.cells[5].innerText;
+      document.getElementById('model').value = fila.cells[6].innerText;
+      document.getElementById('acquisitiondate').value = fila.cells[7].innerText;
+
+      editIndex = fila.rowIndex - 1;
       submitButton.textContent = "Actualizar Auricular";
     });
   }
@@ -217,65 +224,88 @@
       const estado = row.cells[2].innerText;
       resumen[estado] = (resumen[estado] || 0) + 1;
     }
-    resumenDiv.innerHTML = '<h3>Resumen por Estado</h3><ul>' +
-      Object.entries(resumen).map(([estado, cantidad]) => `<li><strong>${estado}:</strong> ${cantidad}</li>`).join('') + '</ul>';
+
+    let html = '<h3>Resumen por Estado</h3><ul>';
+    for (let estado in resumen) {
+      html += <li><strong>${estado}:</strong> ${resumen[estado]}</li>;
+    }
+    html += '</ul>';
+    resumenDiv.innerHTML = html;
   }
 
   async function guardarEnSheetBest(data) {
-    return await fetch(API_URL, {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-  }
-
-  async function actualizarEnSheetBest(id, data) {
-    return await fetch(`${API_URL}?id=${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      console.log("Datos guardados en SheetBest:", result);
+    } catch (error) {
+      console.error("Error al guardar en SheetBest:", error);
+    }
   }
 
   async function cargarDesdeSheetBest() {
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
-      tabla.innerHTML = '';
+      tabla.innerHTML = ''; // limpiar tabla
       data.forEach(item => agregarFila(item));
       actualizarResumenEstados();
-    } catch (e) {
-      console.error("Error al cargar datos", e);
+    } catch (error) {
+      console.error("Error al cargar desde SheetBest:", error);
     }
   }
 
   form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const data = {
-      id: editandoID || generarID(),
-      type: form.type.value,
-      name: form.name.value,
-      status: form.status.value,
-      owner: form.owner.value,
-      location: form.location.value,
-      manufacturer: form.manufacturer.value,
-      model: form.model.value,
-      acquisitiondate: form.acquisitiondate.value
-    };
+  e.preventDefault();
+  const data = {
+    type: document.getElementById('type').value,
+    name: document.getElementById('name').value,
+    status: document.getElementById('status').value,
+    owner: document.getElementById('owner').value,
+    location: document.getElementById('location').value,
+    manufacturer: document.getElementById('manufacturer').value,
+    model: document.getElementById('model').value,
+    acquisitiondate: document.getElementById('acquisitiondate').value
+  };
 
-    if (editandoID) {
-      await actualizarEnSheetBest(editandoID, data);
-    } else {
-      await guardarEnSheetBest(data);
-    }
+  if (editIndex === null) {
+    // Ya no agregamos fila localmente para evitar duplicados
+    await guardarEnSheetBest(data);
+    await cargarDesdeSheetBest(); // recargar tabla y resumen con datos frescos
+  } else {
+    // Editar localmente (sin API)
+    const fila = tabla.rows[editIndex];
+    fila.cells[0].innerText = data.type;
+    fila.cells[1].innerText = data.name;
+    fila.cells[2].innerText = data.status;
+    fila.cells[3].innerText = data.owner;
+    fila.cells[4].innerText = data.location;
+    fila.cells[5].innerText = data.manufacturer;
+    fila.cells[6].innerText = data.model;
+    fila.cells[7].innerText = data.acquisitiondate;
 
-    form.reset();
-    editandoID = null;
+    editIndex = null;
     submitButton.textContent = "Agregar Auricular";
-    await cargarDesdeSheetBest();
-  });
+  }
 
+  actualizarResumenEstados();
+  form.reset();
+});
+
+  // Cargar datos al iniciar la página
+  cargarDesdeSheetBest();
+
+</script>
+
+</body>
+</html>
+
+  // Al cargar la página
   cargarDesdeSheetBest();
 </script>
 </body>
