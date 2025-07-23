@@ -172,38 +172,24 @@
   let editIndex = null;
 
   function agregarFila(data) {
-  const fila = tabla.insertRow();
-  fila.dataset.id = data.id; // guardamos id para borrar después
-  fila.innerHTML = 
-    <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td><td>${data.location}</td>
-    <td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
-    <td>
-      <button class="btn-editar">Editar</button>
-      <button class="btn-borrar">Borrar</button>
-    </td>
-  ;
+    const fila = tabla.insertRow();
+    fila.innerHTML = 
+      <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td><td>${data.location}</td>
+      <td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
+      <td>
+        <button class="btn-editar">Editar</button>
+        <button class="btn-borrar">Borrar</button>
+      </td>
+    ;
 
-  fila.querySelector('.btn-borrar').addEventListener('click', async () => {
-    if (confirm('¿Deseas borrar este registro?')) {
-      const id = fila.dataset.id;
-      if (id) {
-        try {
-          const res = await fetch(${API_URL}?id=${id}, {
-            method: 'DELETE'
-          });
-          if (!res.ok) throw new Error(Error al borrar: ${res.status});
-          fila.remove();
-          actualizarResumenEstados();
-          alert('Registro borrado correctamente');
-        } catch (err) {
-          alert('Error al borrar: ' + err.message);
-          console.error(err);
-        }
-      } else {
-        alert('No se encontró ID para borrar');
+    fila.querySelector('.btn-borrar').addEventListener('click', () => {
+      if (confirm('¿Deseas borrar este registro?')) {
+        fila.remove();
+        actualizarResumenEstados();
+        // Aquí podrías agregar lógica para eliminar desde la API si tuvieras ID
       }
-    }
-  });
+    });
+
     fila.querySelector('.btn-editar').addEventListener('click', () => {
       document.getElementById('type').value = fila.cells[0].innerText;
       document.getElementById('name').value = fila.cells[1].innerText;
@@ -262,41 +248,39 @@
   }
 
   form.addEventListener('submit', async e => {
-  e.preventDefault();
-  const data = {
-    type: document.getElementById('type').value,
-    name: document.getElementById('name').value,
-    status: document.getElementById('status').value,
-    owner: document.getElementById('owner').value,
-    location: document.getElementById('location').value,
-    manufacturer: document.getElementById('manufacturer').value,
-    model: document.getElementById('model').value,
-    acquisitiondate: document.getElementById('acquisitiondate').value
-  };
+    e.preventDefault();
+    const data = {
+      type: document.getElementById('type').value,
+      name: document.getElementById('name').value,
+      status: document.getElementById('status').value,
+      owner: document.getElementById('owner').value,
+      location: document.getElementById('location').value,
+      manufacturer: document.getElementById('manufacturer').value,
+      model: document.getElementById('model').value,
+      acquisitiondate: document.getElementById('acquisitiondate').value
+    };
 
-  if (editIndex === null) {
-    // Ya no agregamos fila localmente para evitar duplicados
-    await guardarEnSheetBest(data);
-    await cargarDesdeSheetBest(); // recargar tabla y resumen con datos frescos
-  } else {
-    // Editar localmente (sin API)
-    const fila = tabla.rows[editIndex];
-    fila.cells[0].innerText = data.type;
-    fila.cells[1].innerText = data.name;
-    fila.cells[2].innerText = data.status;
-    fila.cells[3].innerText = data.owner;
-    fila.cells[4].innerText = data.location;
-    fila.cells[5].innerText = data.manufacturer;
-    fila.cells[6].innerText = data.model;
-    fila.cells[7].innerText = data.acquisitiondate;
+    if (editIndex === null) {
+      agregarFila(data);
+      await guardarEnSheetBest(data);
+    } else {
+      const fila = tabla.rows[editIndex];
+      fila.cells[0].innerText = data.type;
+      fila.cells[1].innerText = data.name;
+      fila.cells[2].innerText = data.status;
+      fila.cells[3].innerText = data.owner;
+      fila.cells[4].innerText = data.location;
+      fila.cells[5].innerText = data.manufacturer;
+      fila.cells[6].innerText = data.model;
+      fila.cells[7].innerText = data.acquisitiondate;
+      // No actualiza en SheetBest porque no hay id para actualizar
+      editIndex = null;
+      submitButton.textContent = "Agregar Auricular";
+    }
 
-    editIndex = null;
-    submitButton.textContent = "Agregar Auricular";
-  }
-
-  actualizarResumenEstados();
-  form.reset();
-});
+    actualizarResumenEstados();
+    form.reset();
+  });
 
   // Cargar datos al iniciar la página
   cargarDesdeSheetBest();
