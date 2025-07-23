@@ -189,7 +189,6 @@
       <button class="btn-borrar">Borrar</button>
     </td>
     `;
-  }
     fila.querySelector('.btn-borrar').addEventListener('click', async () => {
       if (confirm('¿Deseas borrar este registro?')) {
         const id = fila.dataset.id;
@@ -219,6 +218,7 @@
       editId = fila.dataset.id;
       submitButton.textContent = "Actualizar Auricular";
     });
+  }
   }
 
   function actualizarResumenEstados() {
