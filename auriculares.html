@@ -280,9 +280,20 @@
     actualizarResumenEstados();
   }
 
+  function generarNuevoId() {
+  let maxId = 0;
+  for (let row of tabla.rows) {
+    const idFila = parseInt(row.dataset.id);
+    if (!isNaN(idFila) && idFila > maxId) {
+      maxId = idFila;
+    }
+  }
+  return (maxId + 1).toString();
+}
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const id = editId || document.getElementById('id').value || Date.now().toString();
+    const id = editId || generarNuevoId();
     const data = {
       id,
       type: document.getElementById('type').value,
