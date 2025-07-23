@@ -246,13 +246,22 @@
   }
 
   async function actualizarEnSheetBest(id, data) {
-    const res = await fetch(`${API_URL}/until/id/${id}`, {
+  try {
+    const res = await fetch(`${API_URL}/id/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
-    if (!res.ok) throw new Error("Error al actualizar");
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error al actualizar: ${res.status} - ${errorText}`);
+    }
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+    throw error; // para que se propague si querés manejarlo arriba
   }
+}
 
   async function cargarDesdeSheetBest() {
     const res = await fetch(API_URL);
@@ -278,57 +287,49 @@
     };
   }
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    // Solo permitir agregar cuando NO estamos editando
-    if (editId) {
-      return;
-    }
-    const data = getFormData();
-    agregarFila(data);
-    try {
+ form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = editId || Date.now().toString();
+  const data = {
+    id,
+    type: document.getElementById('type').value,
+    name: document.getElementById('name').value,
+    status: document.getElementById('status').value,
+    owner: document.getElementById('owner').value,
+    location: document.getElementById('location').value,
+    manufacturer: document.getElementById('manufacturer').value,
+    model: document.getElementById('model').value,
+    acquisitiondate: document.getElementById('acquisitiondate').value
+  };
+
+  try {
+    if (!editId) {
+      agregarFila(data);
       await guardarEnSheetBest(data);
-      alert("Auricular agregado correctamente");
-    } catch (err) {
-      alert("Error al guardar: " + err.message);
-      console.error(err);
-    }
-    form.reset();
-    actualizarResumenEstados();
-  });
-
-  saveChangesButton.addEventListener('click', async () => {
-    const data = getFormData();
-
-    // Actualizar tabla HTML
-    for (let row of tabla.rows) {
-      if (row.dataset.id === editId) {
-        row.cells[0].innerText = data.type;
-        row.cells[1].innerText = data.name;
-        row.cells[2].innerText = data.status;
-        row.cells[3].innerText = data.owner;
-        row.cells[4].innerText = data.location;
-        row.cells[5].innerText = data.manufacturer;
-        row.cells[6].innerText = data.model;
-        row.cells[7].innerText = data.acquisitiondate;
-        break;
+    } else {
+      for (let row of tabla.rows) {
+        if (row.dataset.id === editId) {
+          row.cells[0].innerText = data.type;
+          row.cells[1].innerText = data.name;
+          row.cells[2].innerText = data.status;
+          row.cells[3].innerText = data.owner;
+          row.cells[4].innerText = data.location;
+          row.cells[5].innerText = data.manufacturer;
+          row.cells[6].innerText = data.model;
+          row.cells[7].innerText = data.acquisitiondate;
+        }
       }
-    }
-
-    try {
       await actualizarEnSheetBest(editId, data);
-      alert("Cambios guardados correctamente");
-    } catch (err) {
-      alert("Error al actualizar: " + err.message);
-      console.error(err);
+      editId = null;
+      submitButton.textContent = "Agregar Auricular";
     }
 
-    editId = null;
-    form.reset();
-    submitButton.style.display = "inline";
-    saveChangesButton.style.display = "none";
     actualizarResumenEstados();
-  });
+    form.reset();
+  } catch (error) {
+    console.error("Falló el guardado o actualización:", error);
+  }
+});
 
   cargarDesdeSheetBest();
 </script>
