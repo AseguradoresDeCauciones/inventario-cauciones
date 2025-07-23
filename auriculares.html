@@ -188,7 +188,7 @@
       if (confirm('¿Deseas borrar este registro?')) {
         const id = fila.dataset.id;
         try {
-          const res = await fetch(`${API_URL}/until/id/${id}`, {
+          const res = await fetch(`${API_URL}/id/${id}`, {
             method: 'DELETE'
           });
           if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
@@ -241,14 +241,22 @@
   }
 
   async function actualizarEnSheetBest(id, data) {
-    const res = await fetch(`${API_URL}/until/id/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error("Error al actualizar");
-  }
+  const res = await fetch(`${API_URL}/id/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error("Error al actualizar");
+}
 
+// Borrado
+fila.querySelector('.btn-borrar').addEventListener('click', async () => {
+  ...
+  const res = await fetch(`${API_URL}/id/${id}`, {
+    method: 'DELETE'
+  });
+  ...
+});
   async function cargarDesdeSheetBest() {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error("Error al cargar datos");
