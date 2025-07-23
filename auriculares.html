@@ -153,7 +153,7 @@ div a button:hover {
   <div id="resumen-estados"></div>
 
  <script>
-  const API_URL = "https://sheetdb.io/api/v1/r1y63jp65y8h4";
+  const API_URL = "https://api.sheetbest.com/sheets/b570c210-d905-4c74-9490-255bb27e4b2d";
 
   const form = document.getElementById('form-auriculares');
   const tabla = document.getElementById('tabla-inventario').getElementsByTagName('tbody')[0];
@@ -220,18 +220,23 @@ div a button:hover {
     resumenDiv.innerHTML = html;
   }
 
-  async function guardarEnSheetDB(data) {
-    try {
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data })
-      });
-      console.log("Datos guardados en SheetDB");
-    } catch (error) {
-      console.error("Error al guardar en SheetDB", error);
-    }
+ async function guardarEnSheetBest(data) {
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      mode: "cors",  // SheetBest permite CORS
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    console.log("Datos guardados en SheetBest:", result);
+  } catch (error) {
+    console.error("Error al guardar en SheetBest:", error);
   }
+}
 
   async function cargarDesdeSheetDB() {
     try {
@@ -259,7 +264,7 @@ div a button:hover {
 
     if (editIndex === null) {
       agregarFila(data);
-      await guardarEnSheetDB(data);
+      await guardarEnSheetBest(data);
     } else {
       const fila = tabla.rows[editIndex];
       fila.cells[0].innerText = data.type;
