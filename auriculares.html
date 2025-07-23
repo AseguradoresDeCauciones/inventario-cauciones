@@ -248,7 +248,7 @@
   async function actualizarEnSheetBest(id, data) {
   try {
     const res = await fetch(`${API_URL}/id/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
@@ -259,7 +259,7 @@
   } catch (error) {
     console.error(error);
     alert(error.message);
-    throw error; // para que se propague si querés manejarlo arriba
+    throw error;
   }
 }
 
