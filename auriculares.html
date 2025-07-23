@@ -111,9 +111,11 @@
   </div>
 
   <form id="form-auriculares">
-    <select id="type" required><option value="HeadSet">HeadSet</option></select>
+     <select id="type">
+      <option value="Camaras">Camaras</option>
+    </select>
     <input type="text" id="name" placeholder="Nombre" required>
-    <select id="status" required>
+    <select id="status">
       <option>Activo</option>
       <option>Retirado</option>
       <option>Eliminado</option>
@@ -122,17 +124,25 @@
       <option>Robados</option>
     </select>
     <select id="owner" required></select>
-    <select id="location" required>
-      <option>Bariloche</option><option>CABA</option><!-- ... -->
+    <select id="location">
+      <option>Bariloche</option><option>CABA</option><option>Casa</option><option>Rosario</option><option>Cordoba</option>
+      <option>Mar del Plata</option><option>Mendoza</option><option>Neuquen</option><option>Resistencia</option>
+      <option>Salta</option><option>Tucuman</option><option>Uruguay</option><option>Data Center</option>
+      <option>Oficina Directores</option><option>Oficina Gerentes</option><option>Sala Aconcagua (living)</option>
+      <option>Sala Condor</option><option>Sala Directorio</option><option>Salon 5to piso</option><option>Terraza</option>
     </select>
-    <select id="manufacturer" required>
-      <option>Jabra</option><!-- ... -->
+    <select id="manufacturer">
+      <option>Acer</option><option>Asus</option><option>Dell</option><option>Genius</option><option>GIGABYTE</option>
+      <option>Hewlett-Packard</option><option>Intel Corporation</option><option>Jabra</option><option>Lenovo</option>
+      <option>LG Electronics</option><option>Logitech</option><option>Microsoft</option><option>Noga</option>
+      <option>OKI</option><option>Philips</option><option>Poly Inc</option><option>RCA</option><option>Samsung</option>
+      <option>Toshiba Corporation</option><option>ViewSonic Corporation</option><option>VMware</option>
     </select>
-    <select id="model" required>
-      <option>Evolve 30 || Duo</option><!-- ... -->
+      <select id="model">
+      <option>Brio4K</option><option>Speak 510</option><option>Speak 710</option><option>Studio P009</option>
     </select>
-    <input type="date" id="acquisitiondate" required>
-    <button type="submit" id="btn-submit">Agregar Auricular</button>
+    <input type="date" id="acquisitiondate">
+    <button type="submit" id="btn-submit">Auricular</button>
   </form>
 
   <table id="tabla-inventario">
