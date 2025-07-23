@@ -324,54 +324,13 @@
       submitButton.textContent = "Agregar Auricular";
     }
 
-    const guardarCambiosBtn = document.getElementById('btn-guardar-cambios');
-
-guardarCambiosBtn.addEventListener('click', async () => {
-  if (!editId) {
-    alert("No hay ningún registro seleccionado para actualizar.");
-    return;
-  }
-
-  const data = {
-    id: editId,
-    type: document.getElementById('type').value,
-    name: document.getElementById('name').value,
-    status: document.getElementById('status').value,
-    owner: document.getElementById('owner').value,
-    location: document.getElementById('location').value,
-    manufacturer: document.getElementById('manufacturer').value,
-    model: document.getElementById('model').value,
-    acquisitiondate: document.getElementById('acquisitiondate').value
-  };
-
-  try {
-    await actualizarEnSheetBest(editId, data);
-
-    // Actualizar fila en la tabla
-    for (let row of tabla.rows) {
-      if (row.dataset.id === editId) {
-        row.cells[0].innerText = data.type;
-        row.cells[1].innerText = data.name;
-        row.cells[2].innerText = data.status;
-        row.cells[3].innerText = data.owner;
-        row.cells[4].innerText = data.location;
-        row.cells[5].innerText = data.manufacturer;
-        row.cells[6].innerText = data.model;
-        row.cells[7].innerText = data.acquisitiondate;
-        break;
-      }
-    }
-
-    alert("Cambios guardados correctamente");
-    form.reset();
-    editId = null;
-    submitButton.textContent = "Agregar Auricular";
     actualizarResumenEstados();
-
+    form.reset();
   } catch (error) {
-    alert("Error al guardar cambios: " + error.message);
+    console.error("Falló el guardado o actualización:", error);
   }
 });
+
   cargarDesdeSheetBest();
 </script>
 
