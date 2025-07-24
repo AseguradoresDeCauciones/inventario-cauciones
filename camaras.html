@@ -111,6 +111,7 @@ div a button:hover {
   </div>
 
   <form id="form-camaras">
+    <input type="hidden" id="id" />
     <select id="type">
       <option value="Camaras">Camaras</option>
     </select>
@@ -157,6 +158,24 @@ div a button:hover {
   <div id="resumen-estados"></div>
 
   <script>
+    const API_URL = "https://api.sheetbest.com/sheets/b570c210-d905-4c74-9490-255bb27e4b2d";
+
+  function formatearFecha(valor) {
+  // Si ya viene en formato YYYY-MM-DD
+  if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) return valor;
+
+  // Si es un número como 45125 desde Excel/Sheets
+  const numero = parseInt(valor);
+  if (!isNaN(numero)) {
+    const fecha = new Date(Date.UTC(1899, 11, 30));
+    fecha.setUTCDate(fecha.getUTCDate() + numero);
+    return fecha.toISOString().split('T')[0];
+  }
+
+  // Si no es fecha válida, se devuelve como está
+  return valor;
+}
+    
     const form = document.getElementById('form-camaras');
     const tabla = document.getElementById('tabla-inventario').getElementsByTagName('tbody')[0];
     const ownerSelect = document.getElementById('owner');
@@ -172,115 +191,168 @@ div a button:hover {
       ownerSelect.appendChild(option);
     });
 
-    let editIndex = null;
-
-    function guardarEnLocalStorage() {
-      const rows = [...tabla.rows].map(row => ({
-        type: row.cells[0].innerText,
-        name: row.cells[1].innerText,
-        status: row.cells[2].innerText,
-        owner: row.cells[3].innerText,
-        location: row.cells[4].innerText,
-        manufacturer: row.cells[5].innerText,
-        model: row.cells[6].innerText,
-        acquisitiondate: row.cells[7].innerText
-      }));
-      localStorage.setItem('inventarioCamaras', JSON.stringify(rows));
-    }
-
-    function cargarDesdeLocalStorage() {
-      const data = JSON.parse(localStorage.getItem('inventarioCamaras') || '[]');
-      data.forEach(item => agregarFila(item));
-    }
-
-    function actualizarResumenEstados() {
-      const resumen = {};
-      for (let row of tabla.rows) {
-        const estado = row.cells[2].innerText;
-        resumen[estado] = (resumen[estado] || 0) + 1;
-      }
-
-      let html = '<h3>Resumen por Estado</h3><ul>';
-      for (let estado in resumen) {
-        html += `<li><strong>${estado}:</strong> ${resumen[estado]}</li>`;
-      }
-      html += '</ul>';
-      resumenDiv.innerHTML = html;
-    }
+    let editId = null;
 
     function agregarFila(data) {
-      const fila = tabla.insertRow();
-      fila.innerHTML = `
-        <td>${data.type}</td><td>${data.name}</td><td>${data.status}</td><td>${data.owner}</td><td>${data.location}</td>
-        <td>${data.manufacturer}</td><td>${data.model}</td><td>${data.acquisitiondate}</td>
-        <td>
-          <button class="btn-editar">Editar</button>
-          <button class="btn-borrar">Borrar</button>
-        </td>
-      `;
+    const fila = tabla.insertRow();
+    fila.dataset.id = data.id;
 
-      fila.querySelector('.btn-borrar').addEventListener('click', () => {
-        fila.remove();
-        guardarEnLocalStorage();
-        actualizarResumenEstados();
-      });
+    fila.innerHTML = `
+      <td>${data.id}</td>
+      <td>${data.type}</td>
+      <td>${data.name}</td>
+      <td>${data.status}</td>
+      <td>${data.owner}</td>
+      <td>${data.location}</td>
+      <td>${data.manufacturer}</td>
+      <td>${data.model}</td>
+      <td>${formatearFecha(data.acquisitiondate)}</td>
+      <td>
+        <button class="btn-editar">Editar</button>
+        <button class="btn-borrar">Borrar</button>
+      </td>
+    `;
 
-      fila.querySelector('.btn-editar').addEventListener('click', () => {
-        editIndex = fila.rowIndex - 1; // fila.rowIndex incluye el encabezado
-        document.getElementById('type').value = fila.cells[0].innerText;
-        document.getElementById('name').value = fila.cells[1].innerText;
-        document.getElementById('status').value = fila.cells[2].innerText;
-        document.getElementById('owner').value = fila.cells[3].innerText;
-        document.getElementById('location').value = fila.cells[4].innerText;
-        document.getElementById('manufacturer').value = fila.cells[5].innerText;
-        document.getElementById('model').value = fila.cells[6].innerText;
-        document.getElementById('acquisitiondate').value = fila.cells[7].innerText;
-        submitButton.textContent = 'Actualizar Camara';
-      });
+      fila.querySelector('.btn-borrar').addEventListener('click', async () => {
+  if (confirm('¿Deseas borrar este registro?')) {
+    const id = fila.dataset.id;
+    console.log("Borrando ID:", id); // 👈 útil para debug
+
+    try {
+      const res = await fetch(`${API_URL}/search?id=${id}`, { method: 'DELETE' }); // 👈 CORREGIDO AQUÍ
+      if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
+      fila.remove();
+      actualizarResumenEstados();
+      alert('Registro borrado correctamente');
+    } catch (err) {
+      alert('Error al borrar: ' + err.message);
+      console.error(err);
+    }
+  }
+});
+
+       fila.querySelector('.btn-editar').addEventListener('click', () => {
+      document.getElementById('id').value = fila.cells[0].innerText;
+      document.getElementById('type').value = fila.cells[1].innerText;
+      document.getElementById('name').value = fila.cells[2].innerText;
+      document.getElementById('status').value = fila.cells[3].innerText;
+      document.getElementById('owner').value = fila.cells[4].innerText;
+      document.getElementById('location').value = fila.cells[5].innerText;
+      document.getElementById('manufacturer').value = fila.cells[6].innerText;
+      document.getElementById('model').value = fila.cells[7].innerText;
+      document.getElementById('acquisitiondate').value = fila.cells[8].innerText;
+
+      editId = fila.dataset.id;
+      submitButton.textContent = "Actualizar Camara";
+    });
+  }
+
+    function actualizarResumenEstados() {
+    const resumen = {};
+    for (let row of tabla.rows) {
+      const estado = row.cells[3].innerText;
+      resumen[estado] = (resumen[estado] || 0) + 1;
+    }
+    let html = '<h3>Resumen por Estado</h3><ul>';
+    for (let estado in resumen) {
+      html += `<li><strong>${estado}:</strong> ${resumen[estado]}</li>`;
+    }
+    html += '</ul>';
+    resumenDiv.innerHTML = html;
+  }
+
+    async function guardarEnSheetBest(data) {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error("Error al guardar");
+  }
+
+  async function actualizarEnSheetBest(id, data) {
+    const res = await fetch(`${API_URL}/search?id=${id}`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data)
+});
+    if (!res.ok) throw new Error("Error al actualizar");
+  }
+
+ async function cargarDesdeSheetBest() {
+  const res = await fetch(API_URL);
+  if (!res.ok) throw new Error("Error al cargar datos");
+  const data = await res.json();
+  tabla.innerHTML = '';
+  data.forEach(item => {
+    agregarFila(item);
+    const idNum = parseInt(item.id);
+    if (!isNaN(idNum) && idNum > ultimoId) {
+      ultimoId = idNum;
+    }
+  });
+  actualizarResumenEstados();
+}
+    let ultimoId = 0;
+
+function generarNuevoId() {
+  ultimoId += 1;
+  return ultimoId.toString();
+}
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const id = editId || generarNuevoId();
+    const data = {
+      id,
+      type: document.getElementById('type').value,
+      name: document.getElementById('name').value,
+      status: document.getElementById('status').value,
+      owner: document.getElementById('owner').value,
+      location: document.getElementById('location').value,
+      manufacturer: document.getElementById('manufacturer').value,
+      model: document.getElementById('model').value,
+     acquisitiondate: new Date(document.getElementById('acquisitiondate').value).toISOString().split('T')[0]
+    };
+
+    if (!data.name || !data.owner || !data.status) {
+  alert('Por favor completa todos los campos requeridos.');
+  return;
+}
+
+    if (!editId) {
+      agregarFila(data);
+      await guardarEnSheetBest(data);
+    } else {
+      for (let row of tabla.rows) {
+        if (row.dataset.id === editId) {
+          row.cells[0].innerText = data.id;
+          row.cells[1].innerText = data.type;
+          row.cells[2].innerText = data.name;
+          row.cells[3].innerText = data.status;
+          row.cells[4].innerText = data.owner;
+          row.cells[5].innerText = data.location;
+          row.cells[6].innerText = data.manufacturer;
+          row.cells[7].innerText = data.model;
+          row.cells[8].innerText = data.acquisitiondate;
+        }
+      }
+      await actualizarEnSheetBest(editId, data);
+      editId = null;
+      submitButton.textContent = "Agregar Camara";
     }
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-
-      const datos = {
-        type: document.getElementById('type').value,
-        name: document.getElementById('name').value.trim(),
-        status: document.getElementById('status').value,
-        owner: document.getElementById('owner').value,
-        location: document.getElementById('location').value,
-        manufacturer: document.getElementById('manufacturer').value,
-        model: document.getElementById('model').value,
-        acquisitiondate: document.getElementById('acquisitiondate').value
-      };
-
-      if(editIndex !== null) {
-        // Actualizar fila existente
-        const fila = tabla.rows[editIndex];
-        fila.cells[0].innerText = datos.type;
-        fila.cells[1].innerText = datos.name;
-        fila.cells[2].innerText = datos.status;
-        fila.cells[3].innerText = datos.owner;
-        fila.cells[4].innerText = datos.location;
-        fila.cells[5].innerText = datos.manufacturer;
-        fila.cells[6].innerText = datos.model;
-        fila.cells[7].innerText = datos.acquisitiondate;
-
-        submitButton.textContent = 'Agregar Camara';
-        editIndex = null;
-      } else {
-        agregarFila(datos);
-      }
-
-      form.reset();
-      guardarEnLocalStorage();
-      actualizarResumenEstados();
-    });
-
-    // Carga inicial
-    cargarDesdeLocalStorage();
     actualizarResumenEstados();
+    form.reset();
+    document.getElementById('id').value = '';
+  });
 
-  </script>
+  cargarDesdeSheetBest();
+</script>
+
+</body>
+</html>
+
 
 </body>
 </html>
