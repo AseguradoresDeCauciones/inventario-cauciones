@@ -211,8 +211,10 @@
    fila.querySelector('.btn-borrar').addEventListener('click', async () => {
   if (confirm('¿Deseas borrar este registro?')) {
     const id = fila.dataset.id;
+    console.log("Borrando ID:", id); // 👈 útil para debug
+
     try {
-      const res = await fetch(`${API_URL}/until/id/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/search?id=${id}`, { method: 'DELETE' }); // 👈 CORREGIDO AQUÍ
       if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
       fila.remove();
       actualizarResumenEstados();
