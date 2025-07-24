@@ -264,11 +264,11 @@
   }
 
   async function actualizarEnSheetBest(id, data) {
-    const res = await fetch(`${API_URL}/until/id/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+    const res = await fetch(`${API_URL}/search?id=${id}`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data)
+});
     if (!res.ok) throw new Error("Error al actualizar");
   }
 
