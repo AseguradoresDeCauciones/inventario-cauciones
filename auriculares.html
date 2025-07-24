@@ -208,21 +208,21 @@
       </td>
     `;
 
-    fila.querySelector('.btn-borrar').addEventListener('click', async () => {
-      if (confirm('¿Deseas borrar este registro?')) {
-        const id = fila.dataset.id;
-        try {
-          const res = await fetch(`${API_URL}/until/id/${id}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
-          fila.remove();
-          actualizarResumenEstados();
-          alert('Registro borrado correctamente');
-        } catch (err) {
-          alert('Error al borrar: ' + err.message);
-          console.error(err);
-        }
-      }
-    });
+   fila.querySelector('.btn-borrar').addEventListener('click', async () => {
+  if (confirm('¿Deseas borrar este registro?')) {
+    const id = fila.dataset.id;
+    try {
+      const res = await fetch(`${API_URL}/until/id/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`Error al borrar: ${res.status}`);
+      fila.remove();
+      actualizarResumenEstados();
+      alert('Registro borrado correctamente');
+    } catch (err) {
+      alert('Error al borrar: ' + err.message);
+      console.error(err);
+    }
+  }
+});
 
     fila.querySelector('.btn-editar').addEventListener('click', () => {
       document.getElementById('id').value = fila.cells[0].innerText;
@@ -272,24 +272,26 @@
     if (!res.ok) throw new Error("Error al actualizar");
   }
 
-  async function cargarDesdeSheetBest() {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("Error al cargar datos");
-    const data = await res.json();
-    tabla.innerHTML = '';
-    data.forEach(item => agregarFila(item));
-    actualizarResumenEstados();
-  }
-
-  function generarNuevoId() {
-  let maxId = 0;
-  for (let row of tabla.rows) {
-    const idFila = parseInt(row.dataset.id);
-    if (!isNaN(idFila) && idFila > maxId) {
-      maxId = idFila;
+ async function cargarDesdeSheetBest() {
+  const res = await fetch(API_URL);
+  if (!res.ok) throw new Error("Error al cargar datos");
+  const data = await res.json();
+  tabla.innerHTML = '';
+  data.forEach(item => {
+    agregarFila(item);
+    const idNum = parseInt(item.id);
+    if (!isNaN(idNum) && idNum > ultimoId) {
+      ultimoId = idNum;
     }
-  }
-  return (maxId + 1).toString();
+  });
+  actualizarResumenEstados();
+}
+
+ let ultimoId = 0;
+
+function generarNuevoId() {
+  ultimoId += 1;
+  return ultimoId.toString();
 }
 
   form.addEventListener('submit', async e => {
@@ -304,8 +306,13 @@
       location: document.getElementById('location').value,
       manufacturer: document.getElementById('manufacturer').value,
       model: document.getElementById('model').value,
-      acquisitiondate: document.getElementById('acquisitiondate').value.toString()
+     acquisitiondate: new Date(document.getElementById('acquisitiondate').value).toISOString().split('T')[0]
     };
+
+    if (!data.name || !data.owner || !data.status) {
+  alert('Por favor completa todos los campos requeridos.');
+  return;
+}
 
     if (!editId) {
       agregarFila(data);
