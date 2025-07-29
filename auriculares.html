@@ -358,11 +358,11 @@ function generarNuevoId() {
 
   cargarDesdeSheetBest();
 
-  function mostrarQR(id, name, model) {
+ function mostrarQR(id, name, model) {
   const contenedor = document.getElementById("contenedorQR");
-  contenedor.innerHTML = ""; // Limpiar anterior
+  contenedor.innerHTML = ""; // Limpiar QR anterior
 
-  const textoQR = `https://tusitio.com/dispositivo?id=${id} | ${name} - ${model}`;
+  const textoQR = `https://nicolaspioli.github.io/inventario-cauciones/dispositivo.html?id=${id} | ${name} - ${model}`;
   new QRCode(contenedor, {
     text: textoQR,
     width: 200,
@@ -370,10 +370,6 @@ function generarNuevoId() {
   });
 
   document.getElementById("modalQR").style.display = "flex";
-}
-
-function cerrarQR() {
-  document.getElementById("modalQR").style.display = "none";
 }
   
 </script>
