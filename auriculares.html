@@ -362,7 +362,7 @@ function generarNuevoId() {
   const contenedor = document.getElementById("contenedorQR");
   contenedor.innerHTML = ""; // Limpiar QR anterior
 
-  const textoQR = `https://nicolaspioli.github.io/inventario-cauciones/dispositivo.html?id=${id} | ${name} - ${model}`;
+  const textoQR = `https://nicolaspioli.github.io/inventario-cauciones/auriculares.html?id=${id} | ${name} - ${model}`;
   new QRCode(contenedor, {
     text: textoQR,
     width: 200,
